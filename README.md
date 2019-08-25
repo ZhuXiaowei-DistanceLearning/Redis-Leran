@@ -1,5 +1,6 @@
 ---
 typora-copy-images-to: redis
+
 ---
 
 # Redis
@@ -147,12 +148,13 @@ typora-copy-images-to: redis
    lrange books 0 -1 // 获取所有元素，O(n)慎用
    ltrim books 1 -1 // O(n) 慎用
    ltrim books 1 0 // 清空整个列表，因为区间长度为负
+   
    ```
 
 8. 快速列表
 
    1. Redis底层存储不是一个简单的linklist，而是快速链表(quicklist)
-   2. ![1565510256604](C:\Users\zxw\Desktop\个人项目笔记\redis\1565510256604.png)
+   2. ![1565510256604](D:\code\IDEA CODE\Redis-Learn\redis\1565510256604.png)
 
 ### 1.3 hash(字典)
 
@@ -191,6 +193,7 @@ typora-copy-images-to: redis
    hmset books java "efftice java" python "learning python" // 批量操作
    hset user-laoqian age 29
    hincrby user-laoqian age 1(integer 30)
+   
    ```
 
 ### 1.4 set集合
@@ -233,6 +236,7 @@ typora-copy-images-to: redis
    srandmember sList count // 随机取值
    smove sList slist2 python // 将值从第一个集合移动到第二个集合，如果集合不存在，则自动创建
    sscan sList 0 match j* // "0":下次迭代游标值，0值代表迭代结束
+   
    ```
 
 7. 集合并、交、差运算操作命令
@@ -241,6 +245,7 @@ typora-copy-images-to: redis
    sunion // 只返回结果
    sunionstore 新集合 集合1 集合2// 返回新列表，不指定新集合，会将集合1变成交集
    sidff // 取差集
+   
    ```
 
 ### 1.5 zset(有序列表)
@@ -291,6 +296,7 @@ typora-copy-images-to: redis
    zrangebyscore book 0 8.9 // 0-8.9排名之间的值
    zrangebyscore book -inf 8.9 withscores // 根据分值区间(负无穷，8.9)遍历zset，同时返回分值。inf代表infinite,无穷大的啥意思
    zrem book "python" // 删除值
+   
    ```
 
 8. 内部使用跳跃列表数据结构来实现
@@ -302,6 +308,7 @@ typora-copy-images-to: redis
    ```
    f的二进制值是01100110,统计为4
    一个英文字符对应一个字节(Byte)8个比特为(Bit)
+   
    ```
 
 2. setbit:设置或者清空指定位置的Bit值
@@ -313,6 +320,7 @@ typora-copy-images-to: redis
    value为比特位"1"或"0"
    当键不存在时，建立一个新的字符串值，并保证offset处有bit值。
    offset值的设置范围0-231
+   
    ```
 
    
@@ -338,6 +346,7 @@ typora-copy-images-to: redis
    pfadd code user1
    pfadd code user2
    pfcount code
+   
    ```
 
    
@@ -357,6 +366,7 @@ typora-copy-images-to: redis
    1)"message"
    2)"channel1"
    3)"xxx" // 接收到发布端发布的消息
+   
    ```
 
 3. psubscribe
@@ -366,6 +376,7 @@ typora-copy-images-to: redis
    ?,例:w?,只能两个字符wo
    *,例:w*,不限个数,want
    [],例:w[2e]are,返回wearem，第一个字母必须为w,第二个字母为[]里的任意一个
+   
    ```
 
 4. punsubscribe
@@ -375,6 +386,7 @@ typora-copy-images-to: redis
    用法同上
    取消指定的订阅模式
    默认取消所有的订阅模式
+   
    ```
 
 5. unsubscribe
@@ -383,6 +395,7 @@ typora-copy-images-to: redis
    unsubscribe [channel [channel...]]
    参数为需要退订的频道，默认取消所有
    返回值：当去取消某指定的频道后，将返回取消消息列表
+   
    ```
 
 6. pubsub
@@ -393,47 +406,48 @@ typora-copy-images-to: redis
    pubsub channels [pattern]：列出当前活动的频道，默认列出所有频道
    pubsub numsub [channel,...,channel_n]:返回指定频道的订阅者数量，格式：频道名、计数、频道名 计数，默认返回空列表
    pubsub numpat:返回指定模式的订阅数量，这里是所有客户端订阅的模式总数
+   
    ```
 
 ### 2.2.连接命令
 
-![1565530122942](C:\Users\zxw\Desktop\个人项目笔记\redis\1565530122942.png)
+![1565530122942](D:\code\IDEA CODE\Redis-Learn\redis\1565530122942.png)
 
-![1565530141777](C:\Users\zxw\Desktop\个人项目笔记\redis\1565530141777.png)
+![1565530141777](D:\code\IDEA CODE\Redis-Learn\redis\1565530141777.png)
 
-![1565530151039](C:\Users\zxw\Desktop\个人项目笔记\redis\1565530151039.png)
+![1565530151039](D:\code\IDEA CODE\Redis-Learn\redis\1565530151039.png)
 
-![1565530158133](C:\Users\zxw\Desktop\个人项目笔记\redis\1565530158133.png)
+![1565530158133](D:\code\IDEA CODE\Redis-Learn\redis\1565530158133.png)
 
 ### 2.3Server操作命令
 
-![1566098620071](C:\Users\zxw\Desktop\个人项目笔记\redis\1566098620071.png)
+![1566098620071](D:\code\IDEA CODE\Redis-Learn\redis\1566098620071.png)
 
-![1566099083533](C:\Users\zxw\Desktop\个人项目笔记\redis\1566099083533.png)
+![1566099083533](D:\code\IDEA CODE\Redis-Learn\redis\1566099083533.png)
 
-![1566098644853](C:\Users\zxw\Desktop\个人项目笔记\redis\1566098644853.png)![1566098654730](C:\Users\zxw\Desktop\个人项目笔记\redis\1566098654730.png)
+![1566098644853](D:\code\IDEA CODE\Redis-Learn\redis\1566098644853.png)![1566098654730](D:\code\IDEA CODE\Redis-Learn\redis\1566098654730.png)
 
-![1566098665807](C:\Users\zxw\Desktop\个人项目笔记\redis\1566098665807.png)
+![1566098665807](D:\code\IDEA CODE\Redis-Learn\redis\1566098665807.png)
 
 ### 2.4 操作磁盘命令
 
-![1566099068243](C:\Users\zxw\Desktop\个人项目笔记\redis\1566099068243.png)
+![1566099068243](D:\code\IDEA CODE\Redis-Learn\redis\1566099068243.png)
 
 ### 2.5 脚本命令
 
-![1566099113163](C:\Users\zxw\Desktop\个人项目笔记\redis\1566099113163.png)
+![1566099113163](D:\code\IDEA CODE\Redis-Learn\redis\1566099113163.png)
 
 ### 2.6 键命令
 
-![1566099151939](C:\Users\zxw\Desktop\个人项目笔记\redis\1566099151939.png)
+![1566099151939](D:\code\IDEA CODE\Redis-Learn\redis\1566099151939.png)
 
 ### 2.7 地理空间操作命令
 
-![1566100555034](C:\Users\zxw\Desktop\个人项目笔记\redis\1566100555034.png)
+![1566100555034](D:\code\IDEA CODE\Redis-Learn\redis\1566100555034.png)
 
 ### 2.8 事务命令
 
-![1566100583218](C:\Users\zxw\Desktop\个人项目笔记\redis\1566100583218.png)
+![1566100583218](D:\code\IDEA CODE\Redis-Learn\redis\1566100583218.png)
 
 ```
 multi // 开启事务
@@ -441,13 +455,14 @@ set count 10
 decr count
 decr count
 exec // 提交事务
+
 ```
 
 ### 2.9 集群命令
 
-![1566102570483](C:\Users\zxw\Desktop\个人项目笔记\redis\1566102570483.png)
+![1566102570483](D:\code\IDEA CODE\Redis-Learn\redis\1566102570483.png)
 
-![1566102576171](C:\Users\zxw\Desktop\个人项目笔记\redis\1566102576171.png)
+![1566102576171](D:\code\IDEA CODE\Redis-Learn\redis\1566102576171.png)
 
 ## 3.Redis配置及参数
 
@@ -456,11 +471,11 @@ exec // 提交事务
 1. daemonize yes:守护进程，3.2版本之后默认为yes
 2. pidfile /var/run/redis/pod
 3. 
-4. ![1566102875041](C:\Users\zxw\Desktop\个人项目笔记\redis\1566102875041.png)
+4. ![1566102875041](D:\code\IDEA CODE\Redis-Learn\redis\1566102875041.png)
 
 ## 4.Java API
 
-1. ![1566104294618](C:\Users\zxw\Desktop\个人项目笔记\redis\1566104294618.png)
+1. ![1566104294618](D:\code\IDEA CODE\Redis-Learn\redis\1566104294618.png)
 2. redis-config.properties
 
 ```properties
@@ -471,6 +486,7 @@ maxWait=10000 // 最大等待时间
 testOnBorrow=false // 设置在每一次取对象时测试ping
 timeout=2000 // 设置redis connect request response timeout
 cluster.ip=127.0.0.1:6379 // 集群连接地址，可以用分割符号连接提供多节点地址
+
 ```
 
 
@@ -485,4 +501,130 @@ cluster.ip=127.0.0.1:6379 // 集群连接地址，可以用分割符号连接提
 ### 3.1 管道技术原理
 
 1. 先批量发送请求，而不是一条一条地返回执行命令，等服务器端接收所有命令后，在服务器端一起执行，最后把执行结果一次性发送回客户端。这样可以减少命令的返回次数，并减少阻塞时间。
+
+2. ```java
+   package guandao;
+   
+   import com.zxw.config.RedisUtils;
+   import org.junit.After;
+   import org.junit.Before;
+   import redis.clients.jedis.Jedis;
+   import redis.clients.jedis.Pipeline;
+   
+   import java.io.IOException;
+   
+   public class Test {
+       private Jedis jedis;
+   
+       @Before
+       public void initJedis() throws IOException {
+           jedis = RedisUtils.initPool().getResource();
+       }
+   
+       @org.junit.Test(timeout = 1000)
+       public void PilecommendTest() {
+           // 清除指定服务器上的0号数据库
+           jedis.flushDB();
+           long t1 = System.currentTimeMillis();
+           noPipeline(jedis);
+           long t2 = System.currentTimeMillis();
+           System.out.printf("非管道方式用时：%d毫秒", t2 - t1);
+           jedis.flushDB();
+           t1 = System.currentTimeMillis();
+           usePipeline(jedis);
+           t2 = System.currentTimeMillis();
+           System.out.printf("管道方式用时：%d毫秒", t2 - t1);
+       }
+   
+       private static void usePipeline(Jedis jedis) {
+           Pipeline p1 = jedis.pipelined();
+           for (int i = 0; i < 10000; i++) {
+               p1.sadd("Sadd",String.valueOf(i));
+           }
+           p1.sync();
+       }
+   
+       private static void noPipeline(Jedis jedis) {
+           for (int i = 0; i < 10000; i++) {
+               jedis.sadd("SetAdd",String.valueOf(i));
+           }
+       }
+   
+       @After
+       public void closeJedis() {
+           jedis.close();
+       }
+   }
+   //
+   非管道方式用时：693毫秒管道方式用时：80毫秒
+   
+   ```
+
+3. Redis在使用管道技术的情况下，会占用服务器端内存资源，所以一般建议一次管道最大发送命令限制在10000条以内
+
+## 4 分布式集群
+
+1. 启动六个节点
+2. 配置ruby
+
+## 5. Lua脚本应用
+
+1. 减少网络开销:把部分特殊代码直接放到服务器端执行，则可以解决因交互而产生的额外的网络开销问题
+2. 原子性操作：Lua脚本在服务器端执行时，将采用排它性行为，也就是脚本代码执行时，其他命令或脚本无法在同一个服务器端执行
+3. 服务端快速代码替换：对于一些经常需要变化业务规则或算法的代码，可以考虑放到服务器端交给Lua脚本，因为Lua脚本第一次执行后，将一直保存在服务器端的脚本缓存中
+
+## 6. Redis实战
+
+### 6.1 广告访问
+
+1. 建立数据集
+
+### 6.2 商品推荐
+
+### 6.3 购物车
+
+### 6.4 记录浏览器行为
+
+### 6.5 替代Session
+
+### 6.6 分页缓存
+
+## 7.电商大数据
+
+### 7.1 速度问题
+
+1. 纵向：单服务器内部挖掘潜力，优化数据库操作技术细节，如以优化数据库索引，提高查询速度等方面
+2. 横向的：分布式多服务器，并进读写分离操作
+
+### 7.2 MongoDB优化
+
+### 7.3 Redis操作速度优化
+
+#### 7.3.1 读写分离
+
+1. 主节点设置
+
+   1. 主节点默认是读写操作，要变为只写操作，需要在该节点的配置文件里设置如下操作
+
+      ```
+      min-slaves-to-write 1 // 在保证所有从节点连接的情况下，主节点接收写操作，默认值为0
+      min-slaves-max-lag 10 // 从节点延迟时间，默认设置10秒
+      
+      ```
+
+   2. 上面两个参数的含义：在一个从节点连接并且延迟时间大于10秒的情况，主节点不再接收外部写请求，等待从节点数据主从同步
+
+   3. ![1566724455762](D:\code\IDEA CODE\Redis-Learn\redis\1566724455762.png)
+
+2. 从节点设置
+
+   1. 从节点默认提供只读操作，并在配置文件开启持久化参数
+   2. ![1566724582881](D:\code\IDEA CODE\Redis-Learn\redis\1566724582881.png)
+
+7.3.2 内存配置优化
+
+1. 压缩存储
+   1. ZipList
+      1. 仅适用于限制范围(限制存储数据量和数据大小)的数据进行操作
+      2. 仅适用于列表、散列、有序集合和整数值集合
 
