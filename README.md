@@ -154,7 +154,7 @@ typora-copy-images-to: redis
 8. 快速列表
 
    1. Redis底层存储不是一个简单的linklist，而是快速链表(quicklist)
-   2. ![1565510256604](D:\code\IDEA CODE\Redis-Learn\redis\1565510256604.png)
+   2. ![1565510256604](D:\code\IDEA CODE\Redis-Learn\redis\1565510256604-1567248080158.png)
 
 ### 1.3 hash(字典)
 
@@ -349,7 +349,9 @@ typora-copy-images-to: redis
    
    ```
 
-   
+### 1.8 布隆过滤器(Bloom Filter)
+
+1. bf.add 
 
 ## 2.其他
 
@@ -411,43 +413,43 @@ typora-copy-images-to: redis
 
 ### 2.2.连接命令
 
-![1565530122942](D:\code\IDEA CODE\Redis-Learn\redis\1565530122942.png)
+![1565530122942](C:\Users\zxw\Desktop\个人项目笔记\redis\1565530122942.png)
 
-![1565530141777](D:\code\IDEA CODE\Redis-Learn\redis\1565530141777.png)
+![1565530141777](C:\Users\zxw\Desktop\个人项目笔记\redis\1565530141777.png)
 
-![1565530151039](D:\code\IDEA CODE\Redis-Learn\redis\1565530151039.png)
+![1565530151039](D:\code\IDEA CODE\Redis-Learn\redis\1565530151039-1567248080160.png)
 
-![1565530158133](D:\code\IDEA CODE\Redis-Learn\redis\1565530158133.png)
+![1565530158133](D:\code\IDEA CODE\Redis-Learn\redis\1565530158133-1567248080160.png)
 
 ### 2.3Server操作命令
 
-![1566098620071](D:\code\IDEA CODE\Redis-Learn\redis\1566098620071.png)
+![1566098620071](C:\Users\zxw\Desktop\个人项目笔记\redis\1566098620071.png)
 
-![1566099083533](D:\code\IDEA CODE\Redis-Learn\redis\1566099083533.png)
+![1566099083533](C:\Users\zxw\Desktop\个人项目笔记\redis\1566099083533.png)
 
-![1566098644853](D:\code\IDEA CODE\Redis-Learn\redis\1566098644853.png)![1566098654730](D:\code\IDEA CODE\Redis-Learn\redis\1566098654730.png)
+![1566098644853](D:\code\IDEA CODE\Redis-Learn\redis\1566098644853-1567248080160.png)![1566098654730](C:\Users\zxw\Desktop\个人项目笔记\redis\1566098654730.png)
 
-![1566098665807](D:\code\IDEA CODE\Redis-Learn\redis\1566098665807.png)
+![1566098665807](D:\code\IDEA CODE\Redis-Learn\redis\1566098665807-1567248080160.png)
 
 ### 2.4 操作磁盘命令
 
-![1566099068243](D:\code\IDEA CODE\Redis-Learn\redis\1566099068243.png)
+![1566099068243](D:\code\IDEA CODE\Redis-Learn\redis\1566099068243-1567248080160.png)
 
 ### 2.5 脚本命令
 
-![1566099113163](D:\code\IDEA CODE\Redis-Learn\redis\1566099113163.png)
+![1566099113163](D:\code\IDEA CODE\Redis-Learn\redis\1566099113163-1567248080160.png)
 
 ### 2.6 键命令
 
-![1566099151939](D:\code\IDEA CODE\Redis-Learn\redis\1566099151939.png)
+![1566099151939](C:\Users\zxw\Desktop\个人项目笔记\redis\1566099151939.png)
 
 ### 2.7 地理空间操作命令
 
-![1566100555034](D:\code\IDEA CODE\Redis-Learn\redis\1566100555034.png)
+![1566100555034](D:\code\IDEA CODE\Redis-Learn\redis\1566100555034-1567248080160.png)
 
 ### 2.8 事务命令
 
-![1566100583218](D:\code\IDEA CODE\Redis-Learn\redis\1566100583218.png)
+![1566100583218](D:\code\IDEA CODE\Redis-Learn\redis\1566100583218-1567248080161.png)
 
 ```
 multi // 开启事务
@@ -460,9 +462,74 @@ exec // 提交事务
 
 ### 2.9 集群命令
 
-![1566102570483](D:\code\IDEA CODE\Redis-Learn\redis\1566102570483.png)
+1. 集群总共有16383个槽，需要分配完成才可以使集群进行在线状态
 
-![1566102576171](D:\code\IDEA CODE\Redis-Learn\redis\1566102576171.png)
+2. ```
+   redis-trib.rb create --replicas 1 127.0.0.1:6481 127.0.0.1:6482 127.0.0.1:6483 127.0.0.1:6484 127.0.0.1:6485 127.0.0.1:6486
+   
+   # replicas 指定
+   
+   ```
+
+3. ruby redis-trib.rb check 127.0.0.1:8000 检查集群是否成功
+
+4. 通信流程
+
+   1. 在分布式存储中需要提供维护节点元数据信息的机制，所谓元数据是指：节点负责哪些数据，是否出现故障等状态信息。常见的元数据维护方式分为：集中式和P2P方式。Redis集群采用P2P的Gossip（流言）协议，Gossip协议工作原理就是节点彼此不断通信交换信息，一段时间后所有的节点都会知道集群完整的信息，这种方式类似流言传播
+   2. 集群中的每个节点都会单独开辟一个TCP通道，用于节点之间彼此通信，通信端口号在基础端口上加10000。
+   3. 每个节点在固定周期内通过特定规则选择几个节点发送ping消息。
+   4. 接收到ping消息的节点用pong消息作为响应。
+
+5. 集群扩容
+
+   1. 准备新节点。
+
+   2. 加入集群。
+
+      1. ```
+         cluster meet
+         
+         ```
+
+      2. ruby方式：redis-trib.rb add-node new_host:new_port existing_host:existing_port --slave --master-id <arg>
+
+      3. redis-trib.rb add-node 127.0.0.1:6385 127.0.0.1:6379
+
+   3. 迁移槽和数据。
+
+      1. ruby方式：redis-trib.rb reshard host:port --from <arg> --to <arg> --slots <arg> --yes --timeout
+         <arg> --pipeline <arg>
+
+      2. ```
+         host：port：必传参数，集群内任意节点地址，用来获取整个集群信息。
+         --from：制定源节点的id，如果有多个源节点，使用逗号分隔，如果是all源节点变为集群内所有主节点，在迁移过程中提示用户输入。
+         --to：需要迁移的目标节点的id，目标节点只能填写一个，在迁移过程中提示用户输入。
+         ·--slots：需要迁移槽的总数量，在迁移过程中提示用户输入。
+         --yes：当打印出reshard执行计划时，是否需要用户输入yes确认后再执行reshard。
+         --timeout：控制每次migrate操作的超时时间，默认为60000毫秒。
+         --pipeline：控制每次批量迁移键的数量，默认为10。
+         
+         ```
+
+         
+
+      ```
+      1）对目标节点发送cluster setslot{slot}importing{sourceNodeId}命令，让
+      目标节点准备导入槽的数据。
+      2）对源节点发送cluster setslot{slot}migrating{targetNodeId}命令，让源
+      节点准备迁出槽的数据。
+      3）源节点循环执行cluster getkeysinslot{slot}{count}命令，获取count个属于槽{slot}的键。
+      4）在源节点上执行migrate{targetIp}{targetPort}""0{timeout}keys{keys...}
+      命令，把获取的键通过流水线（pipeline）机制批量迁移到目标节点，批量迁移版本的migrate命令在Redis3.0.6以上版本提供，之前的migrate命令只能单个键迁移。对于大量key的场景，批量键迁移将极大降低节点之间网络IO次数。
+      5）重复执行步骤3）和步骤4）直到槽下所有的键值数据迁移到目标节点。
+      6）向集群内所有主节点发送cluster setslot{slot}node{targetNodeId}命
+      令，通知槽分配给目标节点。为了保证槽节点映射变更及时传播，需要遍历发送给所有主节点更新被迁移的槽指向新节点。
+      
+      ```
+
+![1566102570483](C:\Users\zxw\Desktop\个人项目笔记\redis\1566102570483.png)
+
+![1566102576171](D:\code\IDEA CODE\Redis-Learn\redis\1566102576171-1567248080161.png)
 
 ## 3.Redis配置及参数
 
@@ -471,11 +538,11 @@ exec // 提交事务
 1. daemonize yes:守护进程，3.2版本之后默认为yes
 2. pidfile /var/run/redis/pod
 3. 
-4. ![1566102875041](D:\code\IDEA CODE\Redis-Learn\redis\1566102875041.png)
+4. ![1566102875041](C:\Users\zxw\Desktop\个人项目笔记\redis\1566102875041.png)
 
 ## 4.Java API
 
-1. ![1566104294618](D:\code\IDEA CODE\Redis-Learn\redis\1566104294618.png)
+1. ![1566104294618](D:\code\IDEA CODE\Redis-Learn\redis\1566104294618-1567248080161.png)
 2. redis-config.properties
 
 ```properties
@@ -614,12 +681,12 @@ cluster.ip=127.0.0.1:6379 // 集群连接地址，可以用分割符号连接提
 
    2. 上面两个参数的含义：在一个从节点连接并且延迟时间大于10秒的情况，主节点不再接收外部写请求，等待从节点数据主从同步
 
-   3. ![1566724455762](D:\code\IDEA CODE\Redis-Learn\redis\1566724455762.png)
+   3. ![1566724455762](D:\code\IDEA CODE\Redis-Learn\redis\1566724455762-1567248080161.png)
 
 2. 从节点设置
 
    1. 从节点默认提供只读操作，并在配置文件开启持久化参数
-   2. ![1566724582881](D:\code\IDEA CODE\Redis-Learn\redis\1566724582881.png)
+   2. ![1566724582881](D:\code\IDEA CODE\Redis-Learn\redis\1566724582881-1567248080161.png)
 
 7.3.2 内存配置优化
 
@@ -628,3 +695,309 @@ cluster.ip=127.0.0.1:6379 // 集群连接地址，可以用分割符号连接提
       1. 仅适用于限制范围(限制存储数据量和数据大小)的数据进行操作
       2. 仅适用于列表、散列、有序集合和整数值集合
 
+## 8.  哨兵模式
+
+1. 定义
+
+   1. 本质上也是一个redis服务，只是没有操作。对每个redis服务起监视作用,sentinel会对所有节点进行监控,可以从主节点获取有关从节点以及其余Sentinel节点的相关信息
+
+2. 环境配置
+
+   ```
+   port 26379
+   daemonize yes
+   logfile "26379.log"
+   dir /opt/soft/redis/data
+   sentinel monitor mymaster 127.0.0.1 6379 2 # 2代表有2个Sentinel节点认为主节点不可达,设置越小条件越宽松，也和领导者选举有关
+   sentinel down-after-milliseconds mymaster 30000 #定期发送ping命令来判断Redis数据节点和其余Sentinel节点是否可达，超时则判定不可达，单位为毫秒
+   sentinel parallel-syncs mymaster 1 #当sentinel集合对主节点故障判定达成一致时，Sentinel领导者节点会做故障转移操作，选出新的主节点，原来的主节点会向新的主节点发起复制操作，此参数用来限制在一次故障转移之后，每次向新的主节点发起复制操作的节点个数，如果设置较大，多个从节点会向新主节点同时发起复制操作
+   sentinel failover-timeout mymaster 180000 # 故障转移超时时间
+   #sentinel auth-pass <master-name> <password>
+   #sentinel notification-script <master-name> <script-path>
+   #sentinel client-reconfig-script <master-name> <script-path>
+   
+   ```
+
+3. 启动命令
+
+   ```
+   redis-server.exe sentinel.conf --sentinel
+   
+   ```
+
+4. 动态设置参数
+
+   1. ![1566898599732](D:\code\IDEA CODE\Redis-Learn\redis\1566898599732.png)
+   2. sentinel set命令只对当前Sentinel节点有效。
+   3. sentinel set命令如果执行成功会立即刷新配置文件，这点和Redis普通数据节点设置配置需要执行config rewrite刷新到配置文件不同。
+   4. 建议所有Sentinel节点的配置尽可能一致，这样在故障发现和转移时比较容易达成一致。
+   5. 表9-3中为sentinel set支持的参数，具体可以参考源码中的sentinel.c的sentinelSetCommand函数。
+   6. Sentinel对外不支持config命令。
+
+5. 部署技巧
+
+   1. 不应该部署在一台物理机器：机器故障所有节点都会失效
+   2. 奇数部署：领导者选举需要一半+1个节点
+   3. 方案一：一套Sentinel，很明显这种方案在一定程度上降低了维护成本，因为只需要维护固定个数的Sentinel节点，集中对多个Redis数据节点进行管理就可以了。但是这同时也是它的缺点，如果这套Sentinel节点集合出现异常，可能会对多个Redis数据节点造成影响。还有如果监控的Redis数据节点较多，会造成Sentinel节点产生过多的网络连接，也会有一定的影响。
+   4. 方案二：多套Sentinel，显然这种方案的优点和缺点和上面是相反的，每个Redis主节点都有自己的Sentinel节点集合，会造成资源浪费。但是优点也很明显，每套Redis Sentinel都是彼此隔离的。
+   5. 如果Sentinel节点集合监控的是同一个业务的多个主节点集合，那么使用方案一、否则一般建议采用方案二。
+
+### 8.1 API
+
+1. sentinel masters:展示所有被监控的主节点状态以及相关的统计信息
+2. sentinel master<master name>:展示指定<master name>的主节点状态以及相关的统计信息
+3. sentinel slaves<master name>:展示指定<master name>的从节点状态以及相关的统计信息
+4. sentinel sentinels<master name>:展示指定<master name>的Sentinel节点集合
+5. sentinel get-master-addr-by-name<master name>:返回指定<master name>主节点的IP地址和端口
+6. sentinel reset<pattern>:当前Sentinel节点对符合<pattern>（通配符风格）主节点的配置进行重置，包含清除主节点的相关状态（例如故障转移），重新发现从节点和Sentinel节点。
+7. sentinel failover<master name>:对指定<master name>主节点进行强制故障转移（没有和其他Sentinel节点“协商”），当故障转移完成后，其他Sentinel节点按照故障转移的结果更新自身配置，这个命令在Redis Sentinel的日常运维中非常有用。
+8. sentinel ckquorum<master name>：检测当前可达的Sentinel节点总数是否达到<quorum>的个数。例如quorum=3，而当前可达的Sentinel节点个数为2个，那么将无法进行故障转移，Redis Sentinel的高可用特性也将失去。
+9. sentinel flushconfig：将Sentinel节点的配置强制刷到磁盘上，这个命令Sentinel节点自身用得比较多，对于开发和运维人员只有当外部原因（例如磁盘损坏）造成配置文件损坏或者丢失时，这个命令是很有用的。
+10. sentinel remove<master name>：取消当前Sentinel节点对于指定<master name>主节点的监控。
+11. sentinel monitor<master name><ip><port><quorum>：这个命令和配置文件中的含义是完全一样的，只不过是通过命令的形式来完成Sentinel节点对主节点的监控。
+12. sentinel set<master name>：动态修改Sentinel节点配置选项
+13. sentinel is-master-down-by-addr：Sentinel节点之间用来交换对主节点是否下线的判断，根据参数的不同，还可以作为Sentinel领导者选举的通信方式
+
+## 9. 复制
+
+1. slaveof{masterHost}{masterPort}
+2. redis-server --slaveof{masterHost}{masterPort}
+3. info replication
+
+## 10. 缓存
+
+### 10.1 概念
+
+1. 目标
+   1. 加快用户访问数据，提供用户体验
+   2. 降低后端负载，减少潜在风险
+   3. 保证数据"尽可能"及时更新
+2. 缓存的好处
+   1. 加速读写，基于全内存
+   2. 降低后端负载均衡：帮助后端减少访问量和复杂计算(例如很复杂的SQL语句)
+3. 缓存的弊端
+   1. 数据不一致性：缓存层和存储层的数据存在着一定时间窗口的不一致性，时间窗口跟更新策略有关
+   2. 代码维护成本
+   3. 运维成本
+4. 基本使用场景
+   1. 开销大的复杂计算：一些复杂的操作或者计算（例如大量联表操作、一些分组计算），如果不加缓存，不但无法满足高并发量，同时也会给MySQL带来巨大的负担。
+   2. 加速请求响应：即使查询单条后端数据足够快（例如select*from table where id=），那么依然可以使用缓存，以Redis为例子，每秒可以完成数万次读写，并且提供的批量操作可以优化整个IO链的响应时间。
+5. 缓存更新策略
+   1. LRU/LFU/FIFO算法
+      1. 使用场景。剔除算法通常用于缓存使用量超过了预设的最大值时候，如何对现有的数据进行剔除。例如Redis使用maxmemory-policy这个配置作为内存最大值后对于数据的剔除策略。
+   2. 超时剔除
+      1. 使用场景。超时剔除通过给缓存数据设置过期时间，让其在过期时间后自动删除，例如Redis提供的expire命令。如果业务可以容忍一段时间内，缓存层数据和存储层数据不一致，那么可以为其设置过期时间。在数据过期后，再从真实数据源获取数据，重新放到缓存并设置过期时间。例如一个视频的描述信息，可以容忍几分钟内数据不一致，但是涉及交易方面的业务，后果可想而知。
+   3. 主动更新
+      1. 使用场景。应用方对于数据的一致性要求高，需要在真实数据更新后，立即更新缓存数据。例如可以利用消息系统或者其他方式通知缓存更新。
+
+### 10.2 穿透优化
+
+1. ![1567219714197](D:\code\IDEA CODE\Redis-Learn\redis\1567219714197.png)
+
+2. 缓存穿透是指查询一个根本不存在的数据，缓存层和存储层都不会命中，通常出于容错的考虑，如果从存储层查不到数据则不写入缓存层
+
+3. 过程
+
+   1. 缓存层不命中。
+   2. 存储层不命中，不将空结果写回缓存。
+   3. 返回空结果。
+
+4. 解决方案
+
+   1. 缓存空对象，设置过期时间
+
+      ```java
+      if (StringUtils.isBlank(cacheValue)) {
+      	// 从存储中获取
+      	String storageValue = storage.get(key);
+      	cache.set(key, storageValue);
+      	// 如果存储数据为空，需要设置一个过期时间(300秒)
+      	if (storageValue == null) {
+      cache.expire(key, 60 * 5);
+      }
+      	return storageValue;
+      } else {
+      	// 缓存非空
+      	return cacheValue;
+      }
+      }
+      
+      ```
+
+   2. 布隆过滤器![1567220530010](D:\code\IDEA CODE\Redis-Learn\redis\1567220530010.png)
+
+   3. 这种方法适用于数据命中不高、数据相对固定、实时性低（通常是数据集较大）的应用场景，代码维护较为复杂，但是缓存空间占用少。
+
+5. 无底洞
+
+   1. 问题分析
+      1. 键值数据库由于通常采用哈希函数将key映射到各个节点上，造成key的分布与业务无关，但是由于数据量和访问量的持续增长，造成需要添加大量节点做水平扩容，导致键值分布到更多的节点上，所以无论是Memcache还是Redis的分布式，批量操作通常需要从不同节点上获取，相比于单机批量操作只涉及一次网络操作，分布式批量操作会涉及多次网络时间。
+      2. 客户端一次批量操作会涉及多次网络操作，也就意味着批量操作会随着节点的增多，耗时会不断增大。
+      3. 网络连接数变多，对节点的性能也有一定影响。
+
+### 10.3 雪崩优化
+
+1. 由于缓存层承载着大量请求，有效地保护了存储层，但是如果缓存层由于某些原因不能提供服务，于是所有的请求都会达到存储层，存储层的调用量会暴增，造成存储层也会级联宕机的情况。缓存雪崩的英文原意是stampeding herd（奔逃的野牛），指的是缓存层宕掉后，流量会像奔逃的野牛一样，打向后端存储。
+2. 优化
+   1. 保证缓存层服务高可用性
+   2. 依赖隔离组件为后端限流并降级
+      1. 在实际项目中，我们需要对重要的资源（例如Redis、MySQL、HBase、外部接口）都进行隔离，让每种资源都单独运行在自己的线程池中，即使个别资源出现了问题，对其他服务没有影响。
+   3. 提前演练
+
+### 10.4 热点key重建优化
+
+1. ![1567222282089](D:\code\IDEA CODE\Redis-Learn\redis\1567222282089.png)
+
+2. 开发人员使用“缓存+过期时间”的策略既可以加速数据读写，又保证数据的定期更新，这种模式基本能够满足绝大部分需求。但是有两个问题如果同时出现，可能就会对应用造成致命的危害：当前key是一个热点key（例如一个热门的娱乐新闻），并发量非常大。重建缓存不能在短时间完成，可能是一个复杂计算，例如复杂的SQL、多次IO、多个依赖等。在缓存失效的瞬间，有大量线程来重建缓存（如图11-16所示），造成后端负载加大，甚至可能会让应用崩溃。要解决这个问题也不是很复杂，但是不能为了解决这个问题给系统带来更多的麻烦，所以需要制定如下目标：
+
+   1. 减少重建缓存的次数
+   2. 数据尽可能一致。
+   3. 较少的潜在危险。
+
+3. 互斥锁
+
+   1. 只允许一个线程重建缓存，其他线程等待重建缓存的线程执行完，重新从缓存获取数据即可
+
+      ```java
+      String get(String key) {
+          // 从Redis中获取数据
+          String value = redis.get(key);
+          // 如果value为空，则开始重构缓存
+          if (value == null) {
+      		// 只允许一个线程重构缓存，使用nx，并设置过期时间ex
+      		String mutexKey = "mutext:key:" + key;
+              if (redis.set(mutexKey, "1", "ex 180", "nx")) {
+              // 从数据源获取数据
+              value = db.get(key);
+              // 回写Redis，并设置过期时间
+              redis.setex(key, timeout, value);
+              // 删除key_mutex
+              redis.delete(mutexKey);
+      	}
+      	// 其他线程休息50毫秒后重试
+      	else {
+      		Thread.sleep(50);
+      		get(key);
+      	}
+      	}
+      	return value;
+      }
+      
+      ```
+
+4. 永远不过期
+
+   1. 从缓存层面来看，确实没有设置过期时间，所以不会出现热点key过期后产生的问题，也就是“物理”不过期。
+
+   2. 从功能层面来看，为每个value设置一个逻辑过期时间，当发现超过逻辑过期时间后，会使用单独的线程去构建缓存。
+
+      ```java
+      long logicTimeout = v.getLogicTimeout();
+      // 如果逻辑过期时间小于当前时间，开始后台构建
+      if (v.logicTimeout <= 				System.currentTimeMillis()) {
+      	String mutexKey = "mutex:key:" + key;
+          if (redis.set(mutexKey, "1", "ex 180", "nx")) {
+          // 重构缓存
+          threadPool.execute(new Runnable() {
+      	public void run() {
+      		String dbValue = db.get(key);
+      		redis.set(key, (dbvalue,newLogicTimeout));
+      		redis.delete(mutexKey);
+      	}
+      	});
+      	}
+      }
+      return value;
+      }
+      
+      ```
+
+## 11. 持久化
+
+### 11.1 RDB
+
+1. 把当前进程数据生成快照保存到硬盘，分为手动触发和自动触发
+2. save:阻塞当前Redis服务器，直到RDB过程完成为止，对于内存
+   比较大的实例会造成长时间阻塞
+3. bgsave:Redis进程执行fork操作创建子进程，RDB持久化过程由子进程负责，完成后自动结束。阻塞只发生在fork阶段，一般时间很短。
+4. 自动触发场景
+   1. 使用save相关配置，如“save m n”。表示m秒内数据集存在n次修改时，自动触发bgsave。
+   2. 如果从节点执行全量复制操作，主节点自动执行bgsave生成RDB文件并发送给从节点，更多细节见6.3节介绍的复制原理。
+   3. 执行debug reload命令重新加载Redis时，也会自动触发save操作。
+   4. 默认情况下执行shutdown命令时，如果没有开启AOF持久化功能则自动执行bgsave。
+
+### 11.2 AOF
+
+1. 以独立日志的方式记录每次写命令，重启时再重新执行AOF文件中的命令达到恢复数据的目的。主要作用解决了数据持久化的实时性，目前已经是Redis持久化的主流方式
+2. 配置appeddonly yes，默认不开启,默认文件名是appendoly.aof
+3. 流程
+   1. 写入命令append
+   2. 文件同步sync
+   3. 文件重写rewrite
+   4. 重启加载load
+4. 重写机制：把Redis进程内的数据转化为写命令同步到新AOF文件的过程
+5. 触发
+   1. 手动触发：bgrewriteaof
+   2. 自动触发：auto-aof-rewrite-min-size和auto-aof-rewirte-precentage
+
+### 11.3 问题定位与优化
+
+1. fork操作耗时定位问题
+   1. 优先使用物理机或者高效支持fork操作的虚拟化技术，避免使用Xen。
+   2. 控制Redis实例最大可用内存，fork耗时跟内存量成正比，线上建议每个Redis实例内存控制在10GB以内。
+   3. 合理配置Linux内存分配策略，避免物理内存不足导致fork失败，具体细节见12.1节“Linux配置优化”。
+   4. 降低fork操作的频率，如适度放宽AOF自动触发时机，避免不必要的全量复制等。
+2. 子进程开销监控和优化
+   1. CPU
+   2. 内存
+   3. 硬盘
+
+### 11.4 多实例部署
+
+![1567235263119](D:\code\IDEA CODE\Redis-Learn\redis\1567235263119.png)
+
+## 12. 阻塞
+
+1. ```java
+   public class Redis Appender extends AppenderBase<ILoggingEvent> {
+   // 使用guava的AtomicLongMap,用于并发计数
+   public static final AtomicLongMap<String> ATOMIC_LONG_MAP = AtomicLongMap.create();
+   static {
+   // 自定义Appender加入到logback的rootLogger中
+   LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+   Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+   ErrorStatisticsAppender errorStatisticsAppender = new ErrorStatisticsAppender();
+   errorStatisticsAppender.setContext(loggerContext);
+   errorStatisticsAppender.start();
+   rootLogger.addAppender(errorStatisticsAppender);
+   }
+   // 重写接收日志事件方法
+   protected void append(ILoggingEvent event) {
+   // 只监控error级别日志
+   if (event.getLevel() == Level.ERROR) {
+   IThrowableProxy throwableProxy = event.getThrowableProxy();
+   // 确认抛出异常
+   if (throwableProxy != null) {
+   // 以每分钟为key，记录每分钟异常数量
+   String key = DateUtil.formatDate(new Date(), "yyyyMMddHHmm");
+   long errorCount = ATOMIC_LONG_MAP.incrementAndGet(key);
+   if (errorCount > 10) {
+   // 超过10次触发报警代码
+   }
+   // 清理历史计数统计，防止极端情况下内存泄露
+   for (String oldKey : ATOMIC_LONG_MAP.asMap().keySet()) {
+   if (!StringUtils.equals(key, oldKey)) {
+   ATOMIC_LONG_MAP.remove(oldKey);
+   }
+   }
+   }
+   }
+   }
+   
+   ```
+
+2. API或数据结构使用不合理
+
+   1. 慢查询：slowlog get{n}获取最近的n条慢查询命令，默认对于执行超过10毫秒级以上的命令都会记录到一个定长队列中
+
+3. 持久化阻塞
